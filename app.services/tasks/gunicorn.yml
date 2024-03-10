@@ -1,0 +1,43 @@
+---
+- name: Install Gunicorn
+  shell: |
+    . {{virtualenv_dir}}/bin/activate
+    cd {{project_dir}}
+    pip install gunicorn
+
+- name: Create log directory
+  file:
+    path: /var/log/gunicorn
+    state: directory
+    mode: 0755
+
+- name: Create access log file
+  file:
+    path: /var/log/gunicorn/access.log
+    state: touch
+    owner: www-data
+    mode: 0664
+
+- name: Create error log file
+  file:
+    path: /var/log/gunicorn/error.log
+    state: touch
+    owner: www-data
+    mode: 0664
+
+- name: Copy Gunicorn socket
+  template:
+    src: "roles/app.services/templates/gunicorn.socket.j2"
+    dest: /etc/systemd/system/gunicorn.socket
+
+- name: Create systemd service
+  template:
+    src: "roles/app.services/templates/gunicorn.service.j2"
+    dest: /etc/systemd/system/gunicorn.service
+
+- name: enable and start gunicorn services
+  shell: |
+    sudo systemctl start gunicorn.socket
+    sudo systemctl enable gunicorn.socket
+    sudo systemctl daemon-reload
+    sudo systemctl restart gunicorn

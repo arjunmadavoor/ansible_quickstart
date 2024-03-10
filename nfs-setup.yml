@@ -1,0 +1,14 @@
+---
+- hosts: host_server
+  tasks:
+    - name: configure-host.yml
+      import_tasks: roles/app.nfs.setup/tasks/configure-host.yml
+  vars_files:
+    - roles/app.nfs.setup/vars/main.yml
+
+- hosts: client_server
+  tasks:
+    - name: configure-client.yml
+      import_tasks: roles/app.nfs.setup/tasks/configure-client.yml
+  vars_files:
+    - roles/app.nfs.setup/vars/main.yml

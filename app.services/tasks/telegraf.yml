@@ -1,0 +1,25 @@
+---
+- name: Update package list
+  apt:
+    update_cache: yes
+
+- name: Install Telegraf
+  apt:
+    name:
+      - telegraf
+    state: present
+
+- name: Add the telegraf.conf file
+  template: 
+    src: "roles/app.services/templates/telegraf.conf.j2"
+    dest: /etc/telegraf/telegraf.conf
+
+- name: Add the telegraf env file
+  template: 
+    src: "roles/app.services/templates/env.telegraf.j2"
+    dest: /etc/default/telegraf
+
+- name: Restart Telegraf service
+  systemd:
+    name: telegraf.service
+    state: restarted

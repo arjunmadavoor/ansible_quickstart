@@ -1,0 +1,30 @@
+---
+- name: Create ssl path for nginx
+  file: dest=/etc/nginx/ssl
+    owner=root
+    group=root
+    mode=u=rw,g=r,o=r
+    recurse=yes
+
+- name: Add SSL certificate
+  copy:
+    src: "roles/app.services/files/{{ ssl_crt_name }}"
+    dest: "/etc/nginx/ssl/{{ ssl_crt_name }}"
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
+
+- name: Add SSL certificate key
+  copy:
+    src: "roles/app.services/files/{{ ssl_key_name }}"
+    dest: "/etc/nginx/ssl/{{ ssl_key_name }}"
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
+
+- name: Restart Nginx
+  service:
+    name: nginx
+    state: restarted

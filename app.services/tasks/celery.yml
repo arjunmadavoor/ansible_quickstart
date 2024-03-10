@@ -1,0 +1,29 @@
+---
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Set up celery service file
+  template: 
+    src: "roles/app.services/templates/celery.service.j2"
+    dest: /etc/systemd/system/celery.service
+
+- name: Set up celery env file
+  template: 
+    src: "roles/app.services/templates/celeryd.j2"
+    dest: /etc/default/celeryd
+
+- name: Start Celery systemd services
+  systemd:
+    name: "celery.service"
+    state: started
+    enabled: yes
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Restart Celery service
+  systemd:
+    name: "celery.service"
+    state: restarted

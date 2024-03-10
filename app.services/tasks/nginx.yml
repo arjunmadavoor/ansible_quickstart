@@ -1,0 +1,8 @@
+---
+- name: Set up nginx
+  template: 
+    src: "roles/app.services/templates/nginx.conf.j2"
+    dest: /etc/nginx/sites-available/{{ project_name }}
+
+- name: Enable nginx site
+  command: ln -sf /etc/nginx/sites-available/{{ project_name }} /etc/nginx/sites-enabled/

@@ -1,0 +1,7 @@
+---
+- name: Renew certificate
+  hosts:
+    - host_dev
+  tasks:
+    - name: Import setup Certificate task
+      import_tasks: roles/app.services/tasks/ssl-update.yml

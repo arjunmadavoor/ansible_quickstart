@@ -1,0 +1,53 @@
+---
+- name: Install uWSGI
+  shell: |
+    . {{virtualenv_dir}}/bin/activate
+    cd {{project_dir}}
+    pip install uwsgi
+
+- name: Create log directory
+  file:
+    path: /var/log/uwsgi
+    state: directory
+    mode: 0755
+
+- name: Create log file
+  file:
+    path: /var/log/uwsgi/{{project_name}}.log
+    state: touch
+    owner: www-data
+    mode: 0664
+
+- name: Create sites directory
+  file:
+    path: /etc/uwsgi/sites
+    state: directory
+    mode: 0755
+
+- name: Create sites_python3 directory
+  file:
+    path: /etc/uwsgi/sites_python3
+    state: directory
+    mode: 0755
+
+- name: Copy uWSGI ini file
+  template:
+    src: "roles/app.services/templates/uwsgi.ini.j2"
+    dest: "/etc/uwsgi/sites_python3/{{project_name}}.ini"
+
+- name: Copy spawn_python3 ini file
+  template:
+    src: "roles/app.services/templates/spawn_python3.ini.j2"
+    dest: "/etc/uwsgi/sites/spawn_python3.ini"
+
+- name: Create uWSGI systemd service
+  template:
+    src: "roles/app.services/templates/uwsgi.service.j2"
+    dest: /etc/systemd/system/uwsgi.service
+
+- name: enable and start uWSGI services
+  shell: |
+    sudo systemctl start uwsgi
+    sudo systemctl enable uwsgi
+    sudo systemctl daemon-reload
+    sudo systemctl restart uwsgi

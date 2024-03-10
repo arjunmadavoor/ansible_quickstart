@@ -1,0 +1,7 @@
+---
+- name: Setup Telegraf
+  hosts:
+    - host_dev
+  tasks:
+    - name: Import setup telegraf task
+      import_tasks: roles/app.services/tasks/telegraf.yml

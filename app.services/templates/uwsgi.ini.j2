@@ -1,0 +1,18 @@
+#/etc/uwsgi/sites_python3/your_project.ini
+[uwsgi]
+#defines directives here
+chdir = {{ project_dir }}
+home = {{ virtualenv_dir }}
+module = {{ project_app_name }}.wsgi:application
+disable-logging = false
+listen = 100
+master = true
+processes = 20
+uid = {{ project_user }}
+gid = {{ project_user }}
+socket = /tmp/{{ project_app_name }}.sock
+buffer-size =   65536
+chmod-socket = 666
+vacuum = true
+enable-threads = true
+logger = file:/var/log/uwsgi/uje.log

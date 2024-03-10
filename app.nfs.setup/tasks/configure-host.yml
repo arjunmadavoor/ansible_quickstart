@@ -1,0 +1,40 @@
+---
+- name: Host sample task
+  debug:
+    msg: "Ansible is executing configure-host.yml file..."
+
+- name: Update apt packages
+  apt:
+    update_cache: yes
+
+- name: Install NFS Kernel Server
+  apt:
+    name: nfs-kernel-server
+    state: present
+
+- name: Create directory
+  file:
+    path: "{{ host_shared_dir }}"
+    state: directory
+    mode: 0755
+
+- name: Set ownership of the directory
+  file:
+    path: "{{ host_shared_dir }}"
+    owner: "{{ shared_user }}"
+    group: "{{ shared_group }}"
+    recurse: yes
+
+- name: Add NFS export configuration
+  lineinfile:
+    path: /etc/exports
+    line: "{{ host_shared_dir }}    {{ item.client_ip }}(rw,sync,no_root_squash,no_subtree_check)"
+    state: present
+    create: yes
+  loop: "{{ nfs_exports }}"
+
+- name: Restart NFS Kernel Server
+  become: yes
+  systemd:
+    name: nfs-kernel-server
+    state: restarted

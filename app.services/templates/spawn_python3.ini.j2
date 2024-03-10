@@ -1,0 +1,8 @@
+#/etc/uwsgi/sites/spawn_python3.ini
+
+[uwsgi]
+env = dev
+base = /var/www
+
+
+privileged-binary-patch-arg = %(base)/env/bin/uwsgi --emperor /etc/uwsgi/sites_python3

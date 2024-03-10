@@ -1,0 +1,29 @@
+---
+- name: Copy git key
+  copy:
+    src: "roles/app.services/files/{{ git_key }}"
+    dest: ~/.ssh/id_rsa
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Check if repository is already cloned
+  stat:
+    path: "{{ project_dir }}"
+  register: repo_stat
+
+- name: Clone repository if it does not exist
+  git:
+    repo: "{{ repo_url }}"
+    dest: "{{ project_dir }}"
+    version: "{{ git_branch }}"
+    accept_hostkey: yes
+  when: repo_stat.stat.exists == False
+
+- name: Change Ownership of project folder
+  file:
+    path: "{{ project_dir }}"
+    owner: www-data
+    group: www-data
+    state: directory
+    recurse: yes

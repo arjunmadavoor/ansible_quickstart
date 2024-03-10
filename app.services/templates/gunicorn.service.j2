@@ -1,0 +1,22 @@
+[Unit]
+Description=gunicorn daemon
+Requires=gunicorn.socket
+After=network.target
+
+[Service]
+User={{ project_user }}
+Group=www-data
+Environment=PYTHONUNBUFFERED=1
+WorkingDirectory={{ project_dir }}
+ExecStart={{ virtualenv_dir }}/bin/gunicorn \
+          --access-logfile /var/log/gunicorn/access.log \
+          --error-logfile /var/log/gunicorn/error.log \
+          --log-level {% if env == 'prod' %} critical {% else %} warning {% endif %} \
+          --capture-output \
+          --workers 5 \
+          --timeout 1800 \
+          --bind unix:/run/gunicorn.sock \
+          {{ project_app_name }}.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

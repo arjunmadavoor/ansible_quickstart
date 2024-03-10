@@ -1,0 +1,49 @@
+---
+- name: Update apt
+  apt: update_cache=yes
+
+- name: install dependency for docker
+  apt:
+    name: "{{item}}"
+    state: present
+    update_cache: yes
+  loop:
+    - lsb-release
+    - ca-certificates
+    - curl
+    - gnupg
+
+- name: Create directory for Docker GPG key if does not exist
+  file:
+    path: "/etc/apt/keyrings"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Delete docker GPG key if exists
+  file:
+    path: /etc/apt/keyrings/docker.gpg
+    state: absent
+
+- name: Add docker GPG key
+  shell: |
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+- name: Add docker repository
+  shell: |
+    echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+    $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+- name: change permission of gpg
+  shell: |
+    sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+- name: Update apt
+  apt: update_cache=yes
+
+- name: Install Docker
+  apt: 
+    name: ['docker-ce', 'docker-ce-cli', 'containerd.io', 'docker-compose-plugin']
+    state: present

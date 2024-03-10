@@ -1,0 +1,12 @@
+---
+# vars file for app.nfs.setup
+host_shared_dir: "/var/www/shared_storage"
+shared_user: "www-data"
+shared_group: "www-data"
+
+nfs_exports:
+  - client_ip: "198.168.0.42"
+  - client_ip: "198.168.0.43"
+
+client_shared_dir: "/var/www/shared_storage"
+host_ip: "198.168.0.45"

@@ -1,0 +1,77 @@
+---
+- name: Update apt
+  apt: update_cache=yes
+
+- name: Install postgres dependencies
+  apt: pkg={{ item }} state=present
+  with_items:
+    - postgresql
+    - postgresql-contrib
+    - libpq-dev
+    - acl
+
+- name: Install psycopg2 library
+  pip:
+    name: psycopg2
+
+- name: Enable PostgreSQL service
+  service:
+    name: postgresql
+    state: started
+    enabled: yes
+
+- name: Create postgres database
+  postgresql_db:
+    state: present
+    name: "{{ postgres_db }}"
+  become: true
+  become_user: postgres
+
+- name: Create db user
+  postgresql_user:
+    state: present
+    name: "{{ postgres_user }}"
+    password: "{{ postgres_password }}"
+  become: true
+  become_user: postgres
+
+- name: Grant postgres db user access to db
+  postgresql_privs:
+    type: database
+    database: "{{ postgres_db }}"
+    roles: "{{ postgres_user }}"
+    grant_option: no
+    privs: all
+  become: true
+  become_user: postgres
+
+# THIS SEGEMNT IS ONLY NEEDED IF BIND IP CHANGE FROM 127.0.0.1 to ANOTHER
+- name: Find the postgresql.conf file
+  command: "find / -name postgresql.conf"
+  register: postgresql_file_result
+  when: postgres_bind_ip_required
+
+- name: Add line to postgresql.conf
+  lineinfile:
+    dest: "{{ postgresql_file_result.stdout }}"
+    regexp: "#listen_addresses = '127.0.0.1'"
+    line: "listen_addresses = '{{ postgres_bind_ip }}'"
+  become: true
+  when: postgres_bind_ip_required
+
+- name: Find the pg_hba.conf file
+  command: "find / -name pg_hba.conf"
+  register: pg_hba_file_result
+  when: postgres_bind_ip_required
+
+- name: Add line to pg_hba.conf
+  lineinfile:
+    path: "{{ pg_hba_file_result.stdout }}"
+    line: "host    all             all             {{ item }}/32           md5"
+  with_items: "{{ postgres_allowed_hosts }}"
+  when: postgres_bind_ip_required
+
+- name: Restart PostgreSQL service
+  service:
+    name: postgresql
+    state: restarted
